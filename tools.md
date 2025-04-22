@@ -20,3 +20,86 @@ https://json4u.cn/
 - 逐词比较——有时候两个 JSON 数据只有很少的差别，比如：两个很长的字符串，但只有一两个词不一样，此时肉眼很难发现具体哪个地方不一致。所以支持了逐词比较，让你能一眼看出具体 diff；
 - 数组差分比较——如果两个 JSON 数组有差异，一般情况下我们其实不需要查看每一个元素的 diff，因为很可能会有比较多的噪音，并不方便我们肉眼查看。所以做了差分比较，提供与 git diff 一样简洁、人类可读的差异；
 - 文本比较——因为文本比较也是很常见的需求，所以支持了将无效 JSON 降级为文本比较（text diff），体验与 git diff 接近。
+
+
+CREATE OR REPLACE PROCEDURE `your_project.your_dataset.generate_suspend_records`()
+BEGIN
+  -- 创建临时表存储中间结果
+  CREATE TEMP TABLE temp_suspend_data AS
+  WITH 
+  -- 第一步：生成基础关联数据
+  base_data AS (
+    SELECT
+      b.RIC_SOURCE,
+      b.companyName,
+      b.suspensionType,
+      b.suspensionDate,
+      b.resumptionDate,
+      b.suspensionstarttime,
+      b.resumptiontime,
+      a.tradingDate,
+      -- 计算总交易日数
+      COUNT(*) OVER(PARTITION BY b.RIC_SOURCE) AS total_days,
+      -- 标记是否是最后交易日
+      ROW_NUMBER() OVER(PARTITION BY b.RIC_SOURCE ORDER BY a.tradingDate DESC) AS rn
+    FROM 
+      `your_project.your_dataset.b` b
+    INNER JOIN 
+      `your_project.your_dataset.a` a
+    ON 
+      a.tradingDate BETWEEN b.suspensionDate AND DATE_SUB(b.resumptionDate, INTERVAL 1 DAY)
+  ),
+  
+  -- 第二步：处理日期合并逻辑
+  processed_data AS (
+    SELECT
+      *,
+      -- 判断是否需要合并最后两行
+      CASE 
+        WHEN total_days > 1 AND rn = total_days - 1 THEN 1
+        ELSE 0
+      END AS merge_flag,
+      -- 生成合并日期（当需要合并时使用前一个交易日）
+      IF(rn = total_days, 
+         ARRAY_AGG(tradingDate ORDER BY tradingDate LIMIT 2)[SAFE_OFFSET(0)],
+         tradingDate) AS display_date
+    FROM 
+      base_data
+  )
+
+  -- 第三步：生成最终输出
+  INSERT INTO `your_project.your_dataset.c`
+  SELECT
+    RIC_SOURCE,
+    companyName,
+    suspensionType,
+    CASE 
+      WHEN total_days = 1 THEN suspensionDate
+      WHEN merge_flag = 1 THEN display_date
+      ELSE DATE_SUB(display_date, INTERVAL 1 DAY)
+    END AS suspensionDate,
+    CASE 
+      WHEN total_days = 1 THEN resumptionDate
+      WHEN merge_flag = 1 THEN NULL
+      ELSE DATE_SUB(display_date, INTERVAL 1 DAY)
+    END AS resumptionDate,
+    CASE 
+      WHEN rn = total_days THEN resumptiontime
+      ELSE suspensionstarttime
+    END AS suspensionstarttime,
+    CASE 
+      WHEN rn = total_days THEN NULL
+      ELSE resumptiontime
+    END AS resumptiontime,
+    MAX(_timestamp) OVER(PARTITION BY RIC_SOURCE, display_date) AS _timestamp
+  FROM 
+    processed_data
+  QUALIFY
+    -- 合并行逻辑
+    (rn = 1 OR NOT merge_flag)
+  ORDER BY 
+    RIC_SOURCE, display_date;
+
+  -- 清理临时表
+  DROP TABLE temp_suspend_data;
+END;
