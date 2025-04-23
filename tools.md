@@ -1,10 +1,10 @@
 #
 ## 键盘按键显示工具  
-http://code52.org/carnac/  
-https://github.com/Code52/carnac/releases/download/2.3.13/Setup.exe
+[网站入口](http://code52.org/carnac/)   
+[github 入口](https://github.com/Code52/carnac/releases/download/2.3.13/Setup.exe)
 
 ## json可视化
-https://json4u.cn/  
+[网站入口](https://json4u.cn/)  
 支持：  
 - JSON 校验——有修改时会自动做校验。错误行会有标注，并提供充足的上下文帮助定位错误；
 - JSON 格式化——拖拽文件或粘贴后会自动格式化，即使是无效的 JSON 数据也能格式化；
@@ -21,85 +21,19 @@ https://json4u.cn/
 - 数组差分比较——如果两个 JSON 数组有差异，一般情况下我们其实不需要查看每一个元素的 diff，因为很可能会有比较多的噪音，并不方便我们肉眼查看。所以做了差分比较，提供与 git diff 一样简洁、人类可读的差异；
 - 文本比较——因为文本比较也是很常见的需求，所以支持了将无效 JSON 降级为文本比较（text diff），体验与 git diff 接近。
 
+### 公式编辑器
+[网站入口](https://www.codecogs.com/latex/eqneditor.php)  
+在github写数学公式的时候可以用上。编辑完公示后，在底部多选框，选择html格式，复制到github的markdown里面，公式就出来啦。   
 
-CREATE OR REPLACE PROCEDURE `your_project.your_dataset.generate_suspend_records`()
-BEGIN
-  -- 创建临时表存储中间结果
-  CREATE TEMP TABLE temp_suspend_data AS
-  WITH 
-  -- 第一步：生成基础关联数据
-  base_data AS (
-    SELECT
-      b.RIC_SOURCE,
-      b.companyName,
-      b.suspensionType,
-      b.suspensionDate,
-      b.resumptionDate,
-      b.suspensionstarttime,
-      b.resumptiontime,
-      a.tradingDate,
-      -- 计算总交易日数
-      COUNT(*) OVER(PARTITION BY b.RIC_SOURCE) AS total_days,
-      -- 标记是否是最后交易日
-      ROW_NUMBER() OVER(PARTITION BY b.RIC_SOURCE ORDER BY a.tradingDate DESC) AS rn
-    FROM 
-      `your_project.your_dataset.b` b
-    INNER JOIN 
-      `your_project.your_dataset.a` a
-    ON 
-      a.tradingDate BETWEEN b.suspensionDate AND DATE_SUB(b.resumptionDate, INTERVAL 1 DAY)
-  ),
-  
-  -- 第二步：处理日期合并逻辑
-  processed_data AS (
-    SELECT
-      *,
-      -- 判断是否需要合并最后两行
-      CASE 
-        WHEN total_days > 1 AND rn = total_days - 1 THEN 1
-        ELSE 0
-      END AS merge_flag,
-      -- 生成合并日期（当需要合并时使用前一个交易日）
-      IF(rn = total_days, 
-         ARRAY_AGG(tradingDate ORDER BY tradingDate LIMIT 2)[SAFE_OFFSET(0)],
-         tradingDate) AS display_date
-    FROM 
-      base_data
-  )
+### 录屏软件
+Captura + ffmpeg.exe（后面这个是配声音用的，添加到 Captura 的路径只放外面的文件夹即可，Captura 会自动识别到 ffmpeg.exe）  
+https://mathewsachin.github.io/Captura/    
+放阿里云盘了：  「录屏软件」https://www.aliyundrive.com/s/pqjsazgPfs6 提取码: 6w3o    
+点击链接保存，或者复制本段内容，打开「阿里云盘」APP ，无需下载极速在线查看，视频原画倍速播放。
+![image](https://user-images.githubusercontent.com/32427537/155875579-a83bddc1-140d-48b5-9b32-8b65d4546115.png)    
+如果要录电脑的声音，就勾选扬声器；如果要录制自己讲话的声音，勾选麦克风    
+顶部红色的点就是录制开始或者结束    
+![image](https://user-images.githubusercontent.com/32427537/155875652-97c392ce-1e32-4b2e-acc4-f813949f561c.png)    
 
-  -- 第三步：生成最终输出
-  INSERT INTO `your_project.your_dataset.c`
-  SELECT
-    RIC_SOURCE,
-    companyName,
-    suspensionType,
-    CASE 
-      WHEN total_days = 1 THEN suspensionDate
-      WHEN merge_flag = 1 THEN display_date
-      ELSE DATE_SUB(display_date, INTERVAL 1 DAY)
-    END AS suspensionDate,
-    CASE 
-      WHEN total_days = 1 THEN resumptionDate
-      WHEN merge_flag = 1 THEN NULL
-      ELSE DATE_SUB(display_date, INTERVAL 1 DAY)
-    END AS resumptionDate,
-    CASE 
-      WHEN rn = total_days THEN resumptiontime
-      ELSE suspensionstarttime
-    END AS suspensionstarttime,
-    CASE 
-      WHEN rn = total_days THEN NULL
-      ELSE resumptiontime
-    END AS resumptiontime,
-    MAX(_timestamp) OVER(PARTITION BY RIC_SOURCE, display_date) AS _timestamp
-  FROM 
-    processed_data
-  QUALIFY
-    -- 合并行逻辑
-    (rn = 1 OR NOT merge_flag)
-  ORDER BY 
-    RIC_SOURCE, display_date;
-
-  -- 清理临时表
-  DROP TABLE temp_suspend_data;
-END;
+## 可视化代码执行过程
+[网站入口](https://staying.fun/zh)
