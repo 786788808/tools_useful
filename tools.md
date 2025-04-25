@@ -37,3 +37,7 @@ https://mathewsachin.github.io/Captura/
 
 ## staying.fun | 可视化代码执行过程
 [网站入口](https://staying.fun/zh)
+
+## emailtick | 临时email
+[网站入口](https://www.emailtick.com/zh)  
+![](https://s3.bmp.ovh/imgs/2025/04/25/659aa676e9b299b6.png)  
