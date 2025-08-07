@@ -38,9 +38,10 @@ https://mathewsachin.github.io/Captura/
 ## staying.fun | 可视化代码执行过程
 [网站入口](https://staying.fun/zh)
 
-## emailtick | 临时email
+## 临时email
 [网站1](https://www.emailtick.com/zh)  
 [网站2](https://www.guerrillamail.com/)  
 [网站3](https://temp-mail.org/zh/)  
+
 ## ProcessOn | 思维导图 流程图
 [网站入口](https://www.processon.com/)
