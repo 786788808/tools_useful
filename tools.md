@@ -43,5 +43,12 @@ https://mathewsachin.github.io/Captura/
 [网站2](https://www.guerrillamail.com/)  
 [网站3](https://temp-mail.org/zh/)  
 
+## 气温地图
+[查询入口](https://zoom.earth/maps/temperature/)  
+
 ## ProcessOn | 思维导图 流程图
 [网站入口](https://www.processon.com/)
+
+## 画架构图
+[github入口](https://github.com/stan-smith/FossFLOW)  
+[网站入口](https://stan-smith.github.io/FossFLOW/)  
