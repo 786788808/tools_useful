@@ -48,5 +48,5 @@ The red dot at the top indicates the start or end of recording.
 
 
 ## Excalidraw | Free Whiteboard Tool
-[Website Link](https://excalidraw.com/)
-![WeChat image 20251215213743 92 30](https://www.imgur.la/images/2025/12/15/_20251215213743_92_30.png)
+[Website Link](https://excalidraw.com/)  
+![效果图](https://img.cdn1.vip/i/694010b37a36e_1765806259.png)  
